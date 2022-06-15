@@ -343,9 +343,10 @@ async function getitems(items){
           }
   
           const item = privatedata[0]
+          console.log("SDS");
           return item;
           // const item_name = item.itemname;
           // const item_price = item.itemprice; 
           // console.log(item_name);   ///ITEM NAME
-          // console.log(item_price);  ///ITEM PRICE
+          // console.log(item_price);  ///ITEM PRICE=====
   }
