@@ -262,7 +262,7 @@ async function getUrl(chart)
 client.login(process.env.CLIENT_TOKEN); 
 
 
-const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
+const watchjob = schedule.scheduleJob('*/2 * * * *', function(){
 
   const consql = mysql.createConnection({
     host: process.env.HOST_DB,  
