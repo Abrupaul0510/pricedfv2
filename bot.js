@@ -4,6 +4,7 @@ const QuickChart = require('quickchart-js');
 const axios = require("axios");
 
 const chartconf = require('./modulesconf');
+const fetch = require('node-fetch');
 
 
 const schedule = require('node-schedule');
@@ -261,7 +262,7 @@ async function getUrl(chart)
 client.login(process.env.CLIENT_TOKEN); 
 
 
-const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
+const watchjob = schedule.scheduleJob('*/2 * * * *', function(){
 
   const consql = mysql.createConnection({
     host: process.env.HOST_DB,  
@@ -275,23 +276,15 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
     consql.query("SELECT items FROM watchlist;", function (err, result, fields) { 
       if(result.length > 0){
         result.forEach(row => {
-          const items = row.items;
-          var data1 = {
-            tradezone: "13",
-            category: "0",
-            search: items,
-          };
-          var sentdata = Object.keys(data1).map((key) => key + "=" + data1[key]).join("&");
-              var url = "http://meaty.dfprofiler.com/browsemarketplace.php?function=browseMarketWithCredits";
-              axios({
-                method: "post",
-                url: url,
-                data: sentdata,
-              })
-                .then(function (response) {
-                  var result = response.data;
-                  var resname1 = result[1].name;
-                  var resprice1 = result[1].price;
+          const items = row.items; ///NAME IN WATCH LIST
+          getitems(items).then(data =>{
+            console.log(data);
+          const item_name = data.itemname;
+          const item_price = data.itemprice; 
+          console.log(item_name);   ///ITEM NAME
+          console.log(item_price);  ///ITEM PRICE
+
+           })
                            const consql = mysql.createConnection({
                            host: process.env.HOST_DB,  
                            user: process.env.USER_DB,
@@ -300,17 +293,59 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
                            });
                            consql.connect(function(err) {
                            if (err) throw err;
-                             consql.query("INSERT INTO pricehistory3( itemname, itemprice) VALUES ( '"+resname1+"' , "+resprice1+");", function (err, result, fields) {
+                             consql.query("INSERT INTO pricehistory3( itemname, itemprice) VALUES ( '"+item_name+"' , "+item_price+");", function (err, result, fields) {
                               if (err) throw err;
                                 console.log(result.affectedRows);
                                 console.log(resname1+' Insert Succesfully');
-                            });
-                         });
-                     }).catch(function (error) {
-                      console.log(resname1+' Insert Not Succesfull');
+                  });
               });
            });
          }
      });
   });
 });
+
+
+async function getitems(items){
+
+  const response = await fetch("https://fairview.deadfrontier.com/onlinezombiemmo/trade_search.php", {
+          "credentials": "include",
+          "headers": {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
+              "Accept": "*/*",
+              "Accept-Language": "en-US,en;q=0.5",
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-Requested-With": "XMLHttpRequest",
+              "Sec-Fetch-Dest": "empty",
+              "Sec-Fetch-Mode": "cors",
+              "Sec-Fetch-Site": "same-origin"
+          },
+          "referrer": "https://fairview.deadfrontier.com/onlinezombiemmo/index.php?page=35",
+          "body": "tradezone=4&searchname="+items+"&memID=&profession=&category=&search=trades&searchtype=buyinglistitemname",
+          "method": "POST",
+          "mode": "cors"
+      });
+          
+          const data = await response.text();
+          // var ret = data.split('tradelist_maxresults=');
+          // const ret2 = ret[1];
+          // var totals = ret2.split('&');
+          // const totalitem = totals[0];
+          // console.log(totalitem);   //prints: 123
+          var privatedata = []
+          let str = data;
+          let obj = Object.fromEntries(new URLSearchParams(str));
+          for (p=0; p<obj['tradelist_maxresults'];p++){
+                  var raw = {}
+                  raw['itemname'] = obj['tradelist_'+p+'_itemname'];
+                  raw['itemprice'] = obj['tradelist_'+p+'_price'];
+                  privatedata.push(raw)
+          }
+  
+          const item = privatedata[0]
+          return item;
+          // const item_name = item.itemname;
+          // const item_price = item.itemprice; 
+          // console.log(item_name);   ///ITEM NAME
+          // console.log(item_price);  ///ITEM PRICE
+  }
