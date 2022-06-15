@@ -262,7 +262,7 @@ async function getUrl(chart)
 client.login(process.env.CLIENT_TOKEN); 
 
 
-const watchjob = schedule.scheduleJob('*/2 * * * *', function(){
+const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
 
   const consql = mysql.createConnection({
     host: process.env.HOST_DB,  
@@ -274,31 +274,36 @@ const watchjob = schedule.scheduleJob('*/2 * * * *', function(){
   consql.connect(function(err) {
     if (err) throw err;
     consql.query("SELECT items FROM watchlist;", function (err, result, fields) { 
+      console.log(result.length)
+      console.log(result)
       if(result.length > 0){
         result.forEach(row => {
           const items = row.items; ///NAME IN WATCH LIST
           getitems(items).then(data =>{
-            console.log(data);
+            // console.log(data);
           const item_name = data.itemname;
           const item_price = data.itemprice; 
-          console.log(item_name);   ///ITEM NAME
-          console.log(item_price);  ///ITEM PRICE
+          // console.log(item_name);   ///ITEM NAME
+          // console.log(item_price);  ///ITEM PRICE
+
+          const consql = mysql.createConnection({
+            host: process.env.HOST_DB,  
+            user: process.env.USER_DB,
+            password: process.env.PASS_DB,
+            database: process.env.DB_DB
+            });
+            consql.connect(function(err) {
+            if (err) throw err;
+              consql.query("INSERT INTO pricehistory3( itemname, itemprice) VALUES ( '"+item_name+"' , "+item_price+");", function (err, result, fields) {
+               if (err) throw err;
+                 console.log(result.affectedRows);
+                 console.log(item_name+' Insert Succesfully');
+           });
+        });
+
 
            })
-                           const consql = mysql.createConnection({
-                           host: process.env.HOST_DB,  
-                           user: process.env.USER_DB,
-                           password: process.env.PASS_DB,
-                           database: process.env.DB_DB
-                           });
-                           consql.connect(function(err) {
-                           if (err) throw err;
-                             consql.query("INSERT INTO pricehistory3( itemname, itemprice) VALUES ( '"+item_name+"' , "+item_price+");", function (err, result, fields) {
-                              if (err) throw err;
-                                console.log(result.affectedRows);
-                                console.log(resname1+' Insert Succesfully');
-                  });
-              });
+
            });
          }
      });
@@ -342,9 +347,9 @@ async function getitems(items){
                   privatedata.push(raw)
           }
   
-          const item = privatedata[0]
-          console.log("SDS");
-          return item;
+          const item = await privatedata[0]
+          // console.log(item)
+          return await item;
           // const item_name = item.itemname;
           // const item_price = item.itemprice; 
           // console.log(item_name);   ///ITEM NAME
