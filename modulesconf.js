@@ -6,7 +6,7 @@ exports.months6= function (newdata,itemname2) {
           "datasets": [
             {
               "label": itemname2,
-              "fill": false,
+              "fill": true,
               "data": newdata.map(a => { 
                 return { x: a[0], y: a[1]  } 
               })
@@ -102,7 +102,7 @@ exports.day7= function(newdata,itemname2) {
         "datasets": [
           {
             "label": itemname2,
-            "fill": false,
+            "fill": true,
             "data": newdata.map(a => { return { x: a[0], y: a[1]  } })
           }
         ]
@@ -145,7 +145,7 @@ exports.day7= function(newdata,itemname2) {
         "datasets": [
           {
             "label": itemname2,
-            "fill": false,
+            "fill": true,
             "data": newdata.map(a => { return { x: a[0], y: a[1]  } })
           }
         ]
