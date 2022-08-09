@@ -262,7 +262,7 @@ async function getUrl(chart)
 client.login(process.env.CLIENT_TOKEN); 
 
 
-const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
+const watchjob = schedule.scheduleJob('*/2 * * * *', function(){
 
   const consql = mysql.createConnection({
     host: process.env.HOST_DB,  
@@ -280,7 +280,7 @@ const watchjob = schedule.scheduleJob('*/59 * * * *', function(){
         result.forEach(row => {
           const items = row.items; ///NAME IN WATCH LIST
           getitems(items).then(data =>{
-            // console.log(data);
+            console.log(data.itemname);
           const item_name = data.itemname;
           const item_price = data.itemprice; 
           // console.log(item_name);   ///ITEM NAME
